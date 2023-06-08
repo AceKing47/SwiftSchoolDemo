@@ -5,7 +5,7 @@
 //  Created by Gerrit Zeissl on 04.06.23.
 //
 
-import UIKit
+/*import UIKit
 import SwiftUI
 
 @main
@@ -46,4 +46,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
 }
+*/
 
+import SwiftUI
+
+@main
+struct ARNumbers: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
