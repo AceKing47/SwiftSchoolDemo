@@ -12,7 +12,7 @@
 		0D5C68692A2CF0A100CCD133 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D5C68682A2CF0A100CCD133 /* Assets.xcassets */; };
 		0D5C686C2A2CF0A100CCD133 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D5C686B2A2CF0A100CCD133 /* Preview Assets.xcassets */; };
 		2001E87A2A3234AD006B3370 /* ImageClassificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001E8792A3234AD006B3370 /* ImageClassificationView.swift */; };
-		2001E87C2A326A2D006B3370 /* FlowerClassifier 2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 2001E87B2A326A2D006B3370 /* FlowerClassifier 2.mlpackage */; };
+		2001E87E2A32743E006B3370 /* FlowerClassifier 2.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 2001E87D2A32743E006B3370 /* FlowerClassifier 2.mlmodel */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,7 +22,7 @@
 		0D5C68682A2CF0A100CCD133 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0D5C686B2A2CF0A100CCD133 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		2001E8792A3234AD006B3370 /* ImageClassificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClassificationView.swift; sourceTree = "<group>"; };
-		2001E87B2A326A2D006B3370 /* FlowerClassifier 2.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; name = "FlowerClassifier 2.mlpackage"; path = "ML/FlowerClassifier 2.mlpackage"; sourceTree = "<group>"; };
+		2001E87D2A32743E006B3370 /* FlowerClassifier 2.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = "FlowerClassifier 2.mlmodel"; path = "ML/FlowerClassifier 2.mlmodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -40,7 +40,7 @@
 			isa = PBXGroup;
 			children = (
 				0D5C68632A2CF09F00CCD133 /* FlowerClassifierSwiftUI */,
-				2001E87B2A326A2D006B3370 /* FlowerClassifier 2.mlpackage */,
+				2001E87D2A32743E006B3370 /* FlowerClassifier 2.mlmodel */,
 				0D5C68622A2CF09F00CCD133 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -143,7 +143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2001E87C2A326A2D006B3370 /* FlowerClassifier 2.mlpackage in Sources */,
+				2001E87E2A32743E006B3370 /* FlowerClassifier 2.mlmodel in Sources */,
 				0D5C68672A2CF09F00CCD133 /* ContentView.swift in Sources */,
 				2001E87A2A3234AD006B3370 /* ImageClassificationView.swift in Sources */,
 				0D5C68652A2CF09F00CCD133 /* FlowerClassifierSwiftUIApp.swift in Sources */,
@@ -289,7 +289,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = at.gerritzeissl.FlappyClone;
+				PRODUCT_BUNDLE_IDENTIFIER = at.gerritzeissl.FlowerClassifierSwiftUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -319,7 +319,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = at.gerritzeissl.FlappyClone;
+				PRODUCT_BUNDLE_IDENTIFIER = at.gerritzeissl.FlowerClassifierSwiftUI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
