@@ -6,6 +6,7 @@
 //
 
 import SpriteKit
+import GameplayKit
 
 class GameScene: SKScene {
         
@@ -36,6 +37,11 @@ class GameScene: SKScene {
     private let gapCategory : UInt32 = 0x1 << 2 // 4
     private let pipeCategory : UInt32 = 0x1 << 3 // 8
     private let groundAndCeilCategory : UInt32 = 0x1 << 4 // 16
+    // GameplayKit Rule system / Scene Update
+    //private var ruleSystem: GKRuleSystem! // Rule system to let the game play itself. I messed up calculating the right amount of force
+    private var prevUpdateTime: TimeInterval = -1;
+    private var deltaTime: TimeInterval = 0
+    private var waitingTime: TimeInterval = 0
     
     // MARK: - Did Move
     // Overwritten Methode, called once, when Scene is shown
@@ -64,7 +70,8 @@ class GameScene: SKScene {
         bird?.physicsBody?.isDynamic = true // is affected by physics
         bird?.physicsBody?.allowsRotation = false // does not rotate
         bird?.physicsBody?.pinned = false // is not pinned, so it can move
-        bird?.physicsBody?.affectedByGravity = true // is affected by gravity
+        //bird?.physicsBody?.affectedByGravity = true // is affected by gravity
+        bird?.physicsBody?.affectedByGravity = false // for Gameplay Kit / Pathfinding to work :(
         bird?.physicsBody?.mass = 2.0 // own mass (kinda fat bird)
         // Animationen init
         for number in 1...2 {
@@ -113,6 +120,8 @@ class GameScene: SKScene {
         highscoreLabel?.position = CGPoint(x: self.frame.minX + 100, y: self.frame.maxY - 100)
         highscoreLabel?.zPosition = 0
         addChild(highscoreLabel!)
+        
+        //createGameKitStuff() // unnecessary because Rule system failed
         
         resetGame()
     }
@@ -186,7 +195,8 @@ class GameScene: SKScene {
         let topPos = self.frame.midY + upperPipe.size.height / 2 + self.frame.height / 2 - safeArea
         let lowPos = self.frame.midY - lowerPipe.size.height / 2 - self.frame.height / 2 + safeArea + gapHeight + lowerPipe.size.height / 2 + upperPipe.size.height / 2
 
-        // Test purpose, set pipe to most up or most down position
+        // Test purpose, set pipe to most up or most down or middle position
+        //let upperY = self.frame.midY + upperPipe.size.height / 2
         //let upperY = topPos
         //let upperY = lowPos
         let upperY = CGFloat.random(in: lowPos...topPos) // in the final game the position is a random value between the lowest and highest position
@@ -274,6 +284,7 @@ class GameScene: SKScene {
     func startTimer() {
         objTimer = Timer.scheduledTimer(withTimeInterval: respawn, repeats: true, block: { (timer) in
             self.createPipes()
+            //timer.invalidate() // Stop after one Pipe
         })
     }
     
@@ -352,3 +363,177 @@ extension GameScene: SKPhysicsContactDelegate {
     }
 }
 
+// MARK: - GameplayKit Methods
+extension GameScene {
+    
+    // Tried to use a Rule System here but that didn't work as expected
+    // The rule was applied successfully but the force calculation was always off
+    
+    /*func createGameKitStuff() {
+        
+        ruleSystem = GKRuleSystem()
+        let rules = [
+            GKRule(predicate: NSPredicate(format: "$distanceToBird != 0.0"), assertingFact: "flap" as NSObjectProtocol, grade: 1.0)
+        ]
+        ruleSystem.add(rules)
+    }
+     
+    override func update(_ currentTime: TimeInterval) {
+        
+        if (prevUpdateTime < 0) {
+            prevUpdateTime = currentTime
+        }
+        deltaTime = currentTime - prevUpdateTime
+        prevUpdateTime = currentTime
+        
+        waitingTime += deltaTime
+        if waitingTime < 0.1 {
+            return
+        }
+        waitingTime = 0
+        
+        var gapNodes: [SKNode] = []
+        for node in children {
+            if node.name == "Gap" {
+                gapNodes.append(node)
+                node.name = "oldGap"
+            }
+        }
+        if(gapNodes.isEmpty) {
+            return
+        }
+        
+        //print("Number of Gap Nodes: \(gapNodes.count)")
+        guard let birdPosX = bird?.position.x else {return}
+        guard let birdPosY = bird?.position.y else {return}
+        
+        var gapNode = gapNodes.first
+        /*if(gapNodes.count > 1) {
+            gapNodes = gapNodes.filter({ node in
+                return node.position.x >= birdPosX
+            })
+            print("Number of Gap Nodes right of birds X: \(gapNodes.count)")
+            gapNode = gapNodes.min { node1, node2 in
+                abs(node1.position.x - birdPosX) < abs(node2.position.x - birdPosX)
+            }
+        }*/
+        
+        guard let gapNode = gapNode else {return}
+        
+        let distance = gapNode.position.y - birdPosY
+        print("Y Distance to closest: \(distance)")
+        
+        ruleSystem.state["distanceToBird"] = distance
+        
+        ruleSystem.reset()
+        ruleSystem.evaluate()
+        
+        let flap = ruleSystem.grade(forFact: "flap" as NSObjectProtocol)
+        if flap > 0.0, isRunning {
+            //bird?.physicsBody?.applyForce(CGVector(dx: 0, dy: 70000)) // That how I thought it would work
+     
+            // Some other tries that didn't go as planned so I gave up unfortunately
+            let gravityForce = (bird?.physicsBody?.mass)! // * physicsWorld.gravity.dy
+            //print("Bird velocity: \(String(describing: bird?.physicsBody?.velocity))")
+            //print("Gravity force: \(gravityForce)")
+            let springForce = 100 * distance
+            var totalForce = gravityForce + springForce //- (bird?.physicsBody?.velocity.dy)!
+            //totalForce *= 100
+            print("Total force to apply: \(totalForce)")
+            bird?.physicsBody?.applyForce(CGVector(dx: 0, dy: totalForce))
+            print("flap")
+        }
+    }*/
+    
+    override func update(_ currentTime: TimeInterval) {
+     
+        // Second approach using a Path Finder solution:
+        // Only works when gravity affection is disabled unfortunately
+        // Because otherwise the same problem as with the rule system occurs
+        // The gravity affects the needed force and is a pain to calculate
+        
+        if (prevUpdateTime < 0) {
+            prevUpdateTime = currentTime
+        }
+        deltaTime = currentTime - prevUpdateTime
+        prevUpdateTime = currentTime
+        
+        waitingTime += deltaTime
+        if waitingTime < 0.1 {
+            return
+        }
+        waitingTime = 0
+        
+        guard let bird = bird else {return}
+        
+        var gapNodes: [SKNode] = []
+        var lowerPipes: [SKNode] = []
+        var upperPipes: [SKNode] = []
+        
+        for node in children {
+            if node.name == "Gap" {
+                gapNodes.append(node)
+            } else if node.name == "UpperPipe" {
+                upperPipes.append(node)
+            } else if node.name == "LowerPipe" {
+                lowerPipes.append(node)
+            } else if node.name == "path" {
+                node.removeFromParent()
+            }
+        }
+        if(gapNodes.isEmpty || lowerPipes.isEmpty || upperPipes.isEmpty) {
+            return
+        }
+        
+        print("Number of Gap Nodes: \(gapNodes.count)")
+        let birdPosX = bird.position.x
+        
+        var gapNode = gapNodes.first
+        if(gapNodes.count > 1) {
+            gapNodes = gapNodes.filter({ node in
+                return node.position.x >= birdPosX
+            })
+            print("Number of Gap Nodes right of birds X: \(gapNodes.count)")
+            gapNode = gapNodes.min { node1, node2 in
+                abs(node1.position.x - birdPosX) < abs(node2.position.x - birdPosX)
+            }
+        }
+        
+        upperPipes = upperPipes.filter({ node in
+            return node.position.x >= birdPosX
+        })
+            
+        lowerPipes = lowerPipes.filter({ node in
+            return node.position.x >= birdPosX
+        })
+        
+        guard let gapNode = gapNode else {return}
+        
+        var obstacles = lowerPipes + upperPipes
+        
+        let nodeObstacles = SKNode.obstacles(fromNodePhysicsBodies: obstacles)
+        let graph = GKObstacleGraph(obstacles: nodeObstacles, bufferRadius: 10.0)
+
+        let startNode = GKGraphNode2D(point: vector_float2(x: Float(bird.position.x), y: Float(bird.position.y)))
+        let toNode = GKGraphNode2D(point: vector_float2(x: Float(bird.position.x), y: Float(gapNode.position.y)))
+
+        graph.connectUsingObstacles(node: startNode)
+        graph.connectUsingObstacles(node: toNode)
+
+        if let nodes = graph.findPath(from: startNode, to: toNode) as? [GKGraphNode2D] {
+            let path = CGMutablePath()
+            path.move(to: bird.position)
+            for node in nodes {
+                path.addLine(to: CGPoint(x: CGFloat(node.position.x), y: CGFloat(node.position.y)))
+            }
+            let action = SKAction.follow(path
+                , asOffset: false, orientToPath: false, duration: 0.5)
+            bird.run(action)
+
+            let pathNode = SKShapeNode(path: path)
+            pathNode.strokeColor = SKColor.red
+            pathNode.name = "path"
+            addChild(pathNode)
+        }
+    }
+}
